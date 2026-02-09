@@ -257,7 +257,8 @@ class GuidedDrawingActivity : AppCompatActivity() {
     private var currentTemplate: DrawingTemplate? = null
     private var currentStepIndex = 0
     private val apiKey = "AIzaSyAkIxaFz8O3QIyCclrsD4uO-uFzVmfJcN0"
-    private val scope = CoroutineScope(Dispatchers.Main + Job())
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var autoAdvanceJob: Job? = null
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -285,6 +286,7 @@ class GuidedDrawingActivity : AppCompatActivity() {
         }
         
         nextButton.setOnClickListener {
+            cancelAutoAdvance()
             moveToNextStep()
         }
         
@@ -297,6 +299,7 @@ class GuidedDrawingActivity : AppCompatActivity() {
         currentTemplate = template
         currentStepIndex = 0
         drawingView.clearCanvas()
+        cancelAutoAdvance()
         
         findViewById<LinearLayout>(R.id.templateSelection).visibility = View.GONE
         findViewById<LinearLayout>(R.id.drawingArea).visibility = View.VISIBLE
@@ -319,7 +322,9 @@ class GuidedDrawingActivity : AppCompatActivity() {
         
         // Auto-analyze after 3 seconds of no drawing
         drawingView.onDrawingPaused = {
-            analyzeProgress()
+            if (autoAdvanceJob?.isActive != true) {
+                analyzeProgress()
+            }
         }
     }
     
@@ -340,7 +345,8 @@ class GuidedDrawingActivity : AppCompatActivity() {
                     encouragementText.visibility = View.VISIBLE
                     
                     // Auto-advance after 2 seconds
-                    scope.launch {
+                    autoAdvanceJob?.cancel()
+                    autoAdvanceJob = scope.launch {
                         delay(2000)
                         moveToNextStep()
                     }
@@ -352,7 +358,13 @@ class GuidedDrawingActivity : AppCompatActivity() {
         }
     }
     
+    private fun cancelAutoAdvance() {
+        autoAdvanceJob?.cancel()
+        autoAdvanceJob = null
+    }
+    
     private fun moveToNextStep() {
+        cancelAutoAdvance()
         currentStepIndex++
         showCurrentStep()
     }
@@ -362,11 +374,26 @@ class GuidedDrawingActivity : AppCompatActivity() {
         encouragementText.text = "You're a great artist! ⭐✨"
         encouragementText.visibility = View.VISIBLE
         drawingView.hideGuide()
+        drawingView.onDrawingPaused = null  // Stop analysis
+        cancelAutoAdvance()
+        
         nextButton.text = "Draw Another"
         nextButton.setOnClickListener {
+            // Reset state
+            currentTemplate = null
+            currentStepIndex = 0
+            drawingView.clearCanvas()
+            
+            // Show selection screen
             findViewById<LinearLayout>(R.id.drawingArea).visibility = View.GONE
             findViewById<LinearLayout>(R.id.templateSelection).visibility = View.VISIBLE
+            
+            // Reset button
             nextButton.text = "Next Step"
+            nextButton.setOnClickListener {
+                cancelAutoAdvance()
+                moveToNextStep()
+            }
         }
     }
     
@@ -380,6 +407,8 @@ class GuidedDrawingActivity : AppCompatActivity() {
             connection.requestMethod = "POST"
             connection.setRequestProperty("Content-Type", "application/json")
             connection.doOutput = true
+            connection.readTimeout = 10000
+            connection.connectTimeout = 10000
             
             val prompt = """
                 You are analyzing a child's drawing progress. The child is learning to draw a ${template.name}.
@@ -457,6 +486,8 @@ class GuidedDrawingActivity : AppCompatActivity() {
     
     override fun onDestroy() {
         super.onDestroy()
+        cancelAutoAdvance()
         scope.cancel()
+        drawingView.onDrawingPaused = null
     }
 }
