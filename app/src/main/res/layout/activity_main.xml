@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/gradient_background"
+    android:padding="8dp">
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#6b21a8"
+        android:gravity="center"
+        android:padding="8dp"/>
+
+    <!-- Canvas -->
+    <com.jazz.drawinggame.DrawingView
+        android:id="@+id/drawingView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@android:color/white"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Colors and Sizes Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="4dp">
+
+        <!-- 3x3 Color Grid -->
+        <GridLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:columnCount="3"
+            android:rowCount="3"
+            android:alignmentMode="alignBounds"
+            android:columnOrderPreserved="false">
+
+            <Button android:id="@+id/colorRed" android:text="❤️" style="@style/ColorButton" android:backgroundTint="#FF6B6B"/>
+            <Button android:id="@+id/colorOrange" android:text="🧡" style="@style/ColorButton" android:backgroundTint="#FFA500"/>
+            <Button android:id="@+id/colorYellow" android:text="💛" style="@style/ColorButton" android:backgroundTint="#FFD93D"/>
+            <Button android:id="@+id/colorGreen" android:text="💚" style="@style/ColorButton" android:backgroundTint="#6BCF7F"/>
+            <Button android:id="@+id/colorBlue" android:text="💙" style="@style/ColorButton" android:backgroundTint="#4D96FF"/>
+            <Button android:id="@+id/colorPurple" android:text="💜" style="@style/ColorButton" android:backgroundTint="#9D4EDD"/>
+            <Button android:id="@+id/colorBlack" android:text="🖤" style="@style/ColorButton" android:backgroundTint="#2D3436"/>
+            <Button android:id="@+id/colorWhite" android:text="🤍" style="@style/ColorButton" android:backgroundTint="#F0F0F0"/>
+            <Button android:id="@+id/colorRainbow" android:text="🌈" style="@style/ColorButton" android:background="@drawable/rainbow_gradient"/>
+        </GridLayout>
+
+        <!-- Size Buttons (Vertical) -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <Button android:id="@+id/sizeSmall" android:text="S" style="@style/SizeButton"/>
+            <Button android:id="@+id/sizeMedium" android:text="M" style="@style/SizeButton"/>
+            <Button android:id="@+id/sizeLarge" android:text="L" style="@style/SizeButton"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="4dp">
+
+        <Button
+            android:id="@+id/btnClear"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:text="🗑️ Clear"
+            android:textSize="16sp"
+            android:backgroundTint="#ef4444"
+            android:layout_marginEnd="2dp"/>
+
+        <Button
+            android:id="@+id/btnLoad"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:text="📂 Load"
+            android:textSize="16sp"
+            android:backgroundTint="#3b82f6"
+            android:layout_marginHorizontal="2dp"/>
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:text="💾 Save"
+            android:textSize="16sp"
+            android:backgroundTint="#22c55e"
+            android:layout_marginStart="2dp"/>
+    </LinearLayout>
+
+</LinearLayout>
