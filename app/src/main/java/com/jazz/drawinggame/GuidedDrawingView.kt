@@ -35,7 +35,7 @@ class GuidedDrawingView @JvmOverloads constructor(
         isAntiAlias = true
     }
     
-    private var guideDrawer: ((Canvas, Paint) -> Unit)? = null
+    private var guideDrawer: ((Canvas, Paint, Int, Int) -> Unit)? = null
     private var currentPath = Path()
     private var currentX = 0f
     private var currentY = 0f
@@ -71,8 +71,8 @@ class GuidedDrawingView @JvmOverloads constructor(
         // Draw white background
         canvas.drawColor(Color.WHITE)
         
-        // Draw guide (dashed overlay)
-        guideDrawer?.invoke(canvas, guidePaint)
+        // Draw guide (dashed overlay) - pass width and height
+        guideDrawer?.invoke(canvas, guidePaint, width, height)
         
         // Draw user's drawing
         userBitmap?.let {
@@ -126,7 +126,7 @@ class GuidedDrawingView @JvmOverloads constructor(
         pauseJob?.cancel()
     }
     
-    fun setGuideDrawer(drawer: (Canvas, Paint) -> Unit) {
+    fun setGuideDrawer(drawer: (Canvas, Paint, Int, Int) -> Unit) {
         guideDrawer = drawer
         invalidate()
     }

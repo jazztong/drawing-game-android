@@ -15,7 +15,7 @@ import java.net.URL
 
 data class DrawingStep(
     val instruction: String,
-    val drawGuide: (android.graphics.Canvas, android.graphics.Paint) -> Unit
+    val drawGuide: (android.graphics.Canvas, android.graphics.Paint, Int, Int) -> Unit
 )
 
 data class DrawingTemplate(
@@ -36,53 +36,71 @@ class GuidedDrawingActivity : AppCompatActivity() {
             name = "Cat",
             emoji = "🐱",
             steps = listOf(
-                DrawingStep("Draw a big circle for the head") { canvas, paint ->
-                    canvas.drawCircle(500f, 400f, 150f, paint)
+                DrawingStep("Draw a big circle for the head") { canvas, paint, w, h ->
+                    val cx = w / 2f
+                    val cy = h * 0.3f
+                    val radius = w * 0.15f
+                    canvas.drawCircle(cx, cy, radius, paint)
                 },
-                DrawingStep("Add two triangle ears on top") { canvas, paint ->
+                DrawingStep("Add two triangle ears on top") { canvas, paint, w, h ->
+                    val cx = w / 2f
+                    val cy = h * 0.3f
+                    val size = w * 0.08f
+                    
                     val leftEar = android.graphics.Path().apply {
-                        moveTo(380f, 300f)
-                        lineTo(420f, 200f)
-                        lineTo(460f, 280f)
+                        moveTo(cx - size * 1.5f, cy - size * 1.2f)
+                        lineTo(cx - size * 0.8f, cy - size * 2.5f)
+                        lineTo(cx - size * 0.2f, cy - size * 0.8f)
                         close()
                     }
                     val rightEar = android.graphics.Path().apply {
-                        moveTo(540f, 280f)
-                        lineTo(580f, 200f)
-                        lineTo(620f, 300f)
+                        moveTo(cx + size * 0.2f, cy - size * 0.8f)
+                        lineTo(cx + size * 0.8f, cy - size * 2.5f)
+                        lineTo(cx + size * 1.5f, cy - size * 1.2f)
                         close()
                     }
                     canvas.drawPath(leftEar, paint)
                     canvas.drawPath(rightEar, paint)
                 },
-                DrawingStep("Draw two big eyes") { canvas, paint ->
-                    canvas.drawCircle(450f, 380f, 25f, paint)
-                    canvas.drawCircle(550f, 380f, 25f, paint)
+                DrawingStep("Draw two big eyes") { canvas, paint, w, h ->
+                    val cx = w / 2f
+                    val cy = h * 0.3f
+                    val eyeSize = w * 0.03f
+                    canvas.drawCircle(cx - w * 0.05f, cy, eyeSize, paint)
+                    canvas.drawCircle(cx + w * 0.05f, cy, eyeSize, paint)
                 },
-                DrawingStep("Add a little nose") { canvas, paint ->
+                DrawingStep("Add a little nose") { canvas, paint, w, h ->
+                    val cx = w / 2f
+                    val cy = h * 0.3f
                     val nose = android.graphics.Path().apply {
-                        moveTo(500f, 420f)
-                        lineTo(490f, 440f)
-                        lineTo(510f, 440f)
+                        moveTo(cx, cy + w * 0.05f)
+                        lineTo(cx - w * 0.02f, cy + w * 0.08f)
+                        lineTo(cx + w * 0.02f, cy + w * 0.08f)
                         close()
                     }
                     canvas.drawPath(nose, paint)
                 },
-                DrawingStep("Draw whiskers on both sides") { canvas, paint ->
+                DrawingStep("Draw whiskers on both sides") { canvas, paint, w, h ->
+                    val cx = w / 2f
+                    val cy = h * 0.3f
                     // Left whiskers
-                    canvas.drawLine(370f, 420f, 420f, 410f, paint)
-                    canvas.drawLine(370f, 440f, 420f, 440f, paint)
+                    canvas.drawLine(cx - w * 0.18f, cy + w * 0.05f, cx - w * 0.28f, cy + w * 0.03f, paint)
+                    canvas.drawLine(cx - w * 0.18f, cy + w * 0.09f, cx - w * 0.28f, cy + w * 0.09f, paint)
                     // Right whiskers
-                    canvas.drawLine(580f, 410f, 630f, 420f, paint)
-                    canvas.drawLine(580f, 440f, 630f, 440f, paint)
+                    canvas.drawLine(cx + w * 0.18f, cy + w * 0.03f, cx + w * 0.28f, cy + w * 0.05f, paint)
+                    canvas.drawLine(cx + w * 0.18f, cy + w * 0.09f, cx + w * 0.28f, cy + w * 0.09f, paint)
                 },
-                DrawingStep("Draw a round body below") { canvas, paint ->
-                    canvas.drawOval(400f, 530f, 600f, 750f, paint)
+                DrawingStep("Draw a round body below") { canvas, paint, w, h ->
+                    val cx = w / 2f
+                    val bodyTop = h * 0.45f
+                    val bodyBottom = h * 0.7f
+                    canvas.drawOval(cx - w * 0.2f, bodyTop, cx + w * 0.2f, bodyBottom, paint)
                 },
-                DrawingStep("Add a curvy tail") { canvas, paint ->
+                DrawingStep("Add a curvy tail") { canvas, paint, w, h ->
+                    val cx = w / 2f
                     val tail = android.graphics.Path().apply {
-                        moveTo(600f, 650f)
-                        cubicTo(650f, 650f, 680f, 700f, 700f, 750f)
+                        moveTo(cx + w * 0.2f, h * 0.6f)
+                        cubicTo(cx + w * 0.3f, h * 0.6f, cx + w * 0.35f, h * 0.68f, cx + w * 0.38f, h * 0.75f)
                     }
                     canvas.drawPath(tail, paint)
                 }
@@ -92,27 +110,34 @@ class GuidedDrawingActivity : AppCompatActivity() {
             name = "House",
             emoji = "🏠",
             steps = listOf(
-                DrawingStep("Draw a big square for the house") { canvas, paint ->
-                    canvas.drawRect(300f, 450f, 700f, 850f, paint)
+                DrawingStep("Draw a big square for the house") { canvas, paint, w, h ->
+                    val left = w * 0.25f
+                    val top = h * 0.4f
+                    val right = w * 0.75f
+                    val bottom = h * 0.8f
+                    canvas.drawRect(left, top, right, bottom, paint)
                 },
-                DrawingStep("Add a triangle roof on top") { canvas, paint ->
+                DrawingStep("Add a triangle roof on top") { canvas, paint, w, h ->
                     val roof = android.graphics.Path().apply {
-                        moveTo(250f, 450f)
-                        lineTo(500f, 250f)
-                        lineTo(750f, 450f)
+                        moveTo(w * 0.2f, h * 0.4f)
+                        lineTo(w * 0.5f, h * 0.2f)
+                        lineTo(w * 0.8f, h * 0.4f)
                         close()
                     }
                     canvas.drawPath(roof, paint)
                 },
-                DrawingStep("Draw a door") { canvas, paint ->
-                    canvas.drawRect(420f, 650f, 580f, 850f, paint)
+                DrawingStep("Draw a door") { canvas, paint, w, h ->
+                    val cx = w / 2f
+                    canvas.drawRect(cx - w * 0.08f, h * 0.6f, cx + w * 0.08f, h * 0.8f, paint)
                 },
-                DrawingStep("Add two windows") { canvas, paint ->
-                    canvas.drawRect(340f, 520f, 450f, 620f, paint)
-                    canvas.drawRect(550f, 520f, 660f, 620f, paint)
+                DrawingStep("Add two windows") { canvas, paint, w, h ->
+                    // Left window
+                    canvas.drawRect(w * 0.3f, h * 0.48f, w * 0.42f, h * 0.58f, paint)
+                    // Right window
+                    canvas.drawRect(w * 0.58f, h * 0.48f, w * 0.7f, h * 0.58f, paint)
                 },
-                DrawingStep("Draw a chimney on the roof") { canvas, paint ->
-                    canvas.drawRect(600f, 300f, 680f, 400f, paint)
+                DrawingStep("Draw a chimney on the roof") { canvas, paint, w, h ->
+                    canvas.drawRect(w * 0.62f, h * 0.25f, w * 0.7f, h * 0.35f, paint)
                 }
             )
         ),
@@ -120,35 +145,39 @@ class GuidedDrawingActivity : AppCompatActivity() {
             name = "Flower",
             emoji = "🌸",
             steps = listOf(
-                DrawingStep("Draw a circle in the middle") { canvas, paint ->
-                    canvas.drawCircle(500f, 450f, 60f, paint)
+                DrawingStep("Draw a circle in the middle") { canvas, paint, w, h ->
+                    canvas.drawCircle(w / 2f, h * 0.35f, w * 0.06f, paint)
                 },
-                DrawingStep("Add 5 petals around it") { canvas, paint ->
+                DrawingStep("Add 5 petals around it") { canvas, paint, w, h ->
+                    val cx = w / 2f
+                    val cy = h * 0.35f
+                    val petal = w * 0.05f
                     // Top
-                    canvas.drawCircle(500f, 350f, 50f, paint)
+                    canvas.drawCircle(cx, cy - w * 0.1f, petal, paint)
                     // Right
-                    canvas.drawCircle(580f, 420f, 50f, paint)
+                    canvas.drawCircle(cx + w * 0.08f, cy - w * 0.03f, petal, paint)
                     // Bottom right
-                    canvas.drawCircle(550f, 520f, 50f, paint)
+                    canvas.drawCircle(cx + w * 0.05f, cy + w * 0.07f, petal, paint)
                     // Bottom left
-                    canvas.drawCircle(450f, 520f, 50f, paint)
+                    canvas.drawCircle(cx - w * 0.05f, cy + w * 0.07f, petal, paint)
                     // Left
-                    canvas.drawCircle(420f, 420f, 50f, paint)
+                    canvas.drawCircle(cx - w * 0.08f, cy - w * 0.03f, petal, paint)
                 },
-                DrawingStep("Draw a long stem going down") { canvas, paint ->
-                    canvas.drawLine(500f, 510f, 500f, 850f, paint)
+                DrawingStep("Draw a long stem going down") { canvas, paint, w, h ->
+                    canvas.drawLine(w / 2f, h * 0.41f, w / 2f, h * 0.8f, paint)
                 },
-                DrawingStep("Add two leaves on the stem") { canvas, paint ->
+                DrawingStep("Add two leaves on the stem") { canvas, paint, w, h ->
+                    val cx = w / 2f
                     val leftLeaf = android.graphics.Path().apply {
-                        moveTo(500f, 650f)
-                        quadTo(420f, 670f, 450f, 720f)
-                        lineTo(500f, 700f)
+                        moveTo(cx, h * 0.55f)
+                        quadTo(cx - w * 0.08f, h * 0.58f, cx - w * 0.05f, h * 0.65f)
+                        lineTo(cx, h * 0.62f)
                         close()
                     }
                     val rightLeaf = android.graphics.Path().apply {
-                        moveTo(500f, 730f)
-                        quadTo(580f, 750f, 550f, 800f)
-                        lineTo(500f, 780f)
+                        moveTo(cx, h * 0.68f)
+                        quadTo(cx + w * 0.08f, h * 0.71f, cx + w * 0.05f, h * 0.78f)
+                        lineTo(cx, h * 0.75f)
                         close()
                     }
                     canvas.drawPath(leftLeaf, paint)
@@ -160,23 +189,29 @@ class GuidedDrawingActivity : AppCompatActivity() {
             name = "Sun",
             emoji = "☀️",
             steps = listOf(
-                DrawingStep("Draw a big circle for the sun") { canvas, paint ->
-                    canvas.drawCircle(500f, 450f, 120f, paint)
+                DrawingStep("Draw a big circle for the sun") { canvas, paint, w, h ->
+                    canvas.drawCircle(w / 2f, h * 0.35f, w * 0.12f, paint)
                 },
-                DrawingStep("Add rays all around (8 lines)") { canvas, paint ->
+                DrawingStep("Add rays all around (8 lines)") { canvas, paint, w, h ->
+                    val cx = w / 2f
+                    val cy = h * 0.35f
+                    val inner = w * 0.13f
+                    val outer = w * 0.18f
                     // Top
-                    canvas.drawLine(500f, 300f, 500f, 250f, paint)
+                    canvas.drawLine(cx, cy - inner, cx, cy - outer, paint)
                     // Bottom
-                    canvas.drawLine(500f, 600f, 500f, 650f, paint)
+                    canvas.drawLine(cx, cy + inner, cx, cy + outer, paint)
                     // Left
-                    canvas.drawLine(350f, 450f, 300f, 450f, paint)
+                    canvas.drawLine(cx - inner, cy, cx - outer, cy, paint)
                     // Right
-                    canvas.drawLine(650f, 450f, 700f, 450f, paint)
+                    canvas.drawLine(cx + inner, cy, cx + outer, cy, paint)
                     // Diagonals
-                    canvas.drawLine(395f, 345f, 360f, 310f, paint)
-                    canvas.drawLine(605f, 345f, 640f, 310f, paint)
-                    canvas.drawLine(395f, 555f, 360f, 590f, paint)
-                    canvas.drawLine(605f, 555f, 640f, 590f, paint)
+                    val diag = inner * 0.707f
+                    val diagOut = outer * 0.707f
+                    canvas.drawLine(cx - diag, cy - diag, cx - diagOut, cy - diagOut, paint)
+                    canvas.drawLine(cx + diag, cy - diag, cx + diagOut, cy - diagOut, paint)
+                    canvas.drawLine(cx - diag, cy + diag, cx - diagOut, cy + diagOut, paint)
+                    canvas.drawLine(cx + diag, cy + diag, cx + diagOut, cy + diagOut, paint)
                 }
             )
         ),
@@ -184,34 +219,34 @@ class GuidedDrawingActivity : AppCompatActivity() {
             name = "Fish",
             emoji = "🐟",
             steps = listOf(
-                DrawingStep("Draw an oval body") { canvas, paint ->
-                    canvas.drawOval(350f, 350f, 600f, 550f, paint)
+                DrawingStep("Draw an oval body") { canvas, paint, w, h ->
+                    canvas.drawOval(w * 0.3f, h * 0.3f, w * 0.7f, h * 0.5f, paint)
                 },
-                DrawingStep("Add a triangle tail on the left") { canvas, paint ->
+                DrawingStep("Add a triangle tail on the left") { canvas, paint, w, h ->
                     val tail = android.graphics.Path().apply {
-                        moveTo(350f, 450f)
-                        lineTo(250f, 380f)
-                        lineTo(250f, 520f)
+                        moveTo(w * 0.3f, h * 0.4f)
+                        lineTo(w * 0.18f, h * 0.33f)
+                        lineTo(w * 0.18f, h * 0.47f)
                         close()
                     }
                     canvas.drawPath(tail, paint)
                 },
-                DrawingStep("Draw a fin on top") { canvas, paint ->
+                DrawingStep("Draw a fin on top") { canvas, paint, w, h ->
                     val fin = android.graphics.Path().apply {
-                        moveTo(470f, 350f)
-                        lineTo(490f, 280f)
-                        lineTo(510f, 350f)
+                        moveTo(w * 0.48f, h * 0.3f)
+                        lineTo(w * 0.5f, h * 0.22f)
+                        lineTo(w * 0.52f, h * 0.3f)
                         close()
                     }
                     canvas.drawPath(fin, paint)
                 },
-                DrawingStep("Add a big eye") { canvas, paint ->
-                    canvas.drawCircle(520f, 420f, 30f, paint)
+                DrawingStep("Add a big eye") { canvas, paint, w, h ->
+                    canvas.drawCircle(w * 0.6f, h * 0.38f, w * 0.03f, paint)
                 },
-                DrawingStep("Draw a smiling mouth") { canvas, paint ->
+                DrawingStep("Draw a smiling mouth") { canvas, paint, w, h ->
                     val mouth = android.graphics.Path().apply {
-                        moveTo(560f, 450f)
-                        quadTo(580f, 470f, 560f, 490f)
+                        moveTo(w * 0.65f, h * 0.4f)
+                        quadTo(w * 0.68f, h * 0.43f, w * 0.65f, h * 0.46f)
                     }
                     canvas.drawPath(mouth, paint)
                 }
