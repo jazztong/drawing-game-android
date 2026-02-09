@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_background">
+
+    <!-- Template Selection Screen -->
+    <LinearLayout
+        android:id="@+id/templateSelection"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎨 Guided Drawing"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="I'll help you draw step by step!"
+            android:textSize="18sp"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="32dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Choose what to draw:"
+            android:textSize="16sp"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="8dp"/>
+
+        <Spinner
+            android:id="@+id/templateSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:padding="16dp"
+            android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:id="@+id/startButton"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Start Drawing!"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:backgroundTint="#4CAF50"/>
+
+        <Button
+            android:id="@+id/backButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Back to Free Draw"
+            android:textSize="14sp"
+            android:backgroundTint="#666666"
+            android:layout_marginTop="16dp"/>
+    </LinearLayout>
+
+    <!-- Drawing Area -->
+    <LinearLayout
+        android:id="@+id/drawingArea"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <!-- Instruction Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#E8F5E9"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/instructionText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Step 1: Draw a circle"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#2E7D32"
+                android:gravity="center"/>
+
+            <TextView
+                android:id="@+id/encouragementText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="16sp"
+                android:textColor="#4CAF50"
+                android:gravity="center"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"/>
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"/>
+        </LinearLayout>
+
+        <!-- Drawing Canvas -->
+        <com.jazz.drawinggame.GuidedDrawingView
+            android:id="@+id/guidedDrawingView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@android:color/white"/>
+
+        <!-- Control Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:background="@drawable/rainbow_gradient"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/nextButton"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                android:text="Next Step →"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:backgroundTint="#2196F3"
+                android:textColor="@android:color/white"/>
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

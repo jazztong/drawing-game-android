@@ -68,7 +68,7 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Action Buttons -->
+    <!-- Action Buttons Row 1 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -104,6 +104,24 @@
             android:textSize="16sp"
             android:backgroundTint="#22c55e"
             android:layout_marginStart="2dp"/>
+    </LinearLayout>
+
+    <!-- Action Buttons Row 2 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="4dp"
+        android:paddingTop="0dp">
+
+        <Button
+            android:id="@+id/btnGuided"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="🎨 Guided Drawing (AI Helper)"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:backgroundTint="#9333ea"/>
     </LinearLayout>
 
 </LinearLayout>

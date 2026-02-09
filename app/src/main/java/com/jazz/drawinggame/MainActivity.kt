@@ -2,6 +2,7 @@ package com.jazz.drawinggame
 
 import android.Manifest
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -52,6 +53,9 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnClear).setOnClickListener { drawingView.clearCanvas() }
         findViewById<Button>(R.id.btnLoad).setOnClickListener { pickImage.launch("image/*") }
         findViewById<Button>(R.id.btnSave).setOnClickListener { saveDrawing() }
+        findViewById<Button>(R.id.btnGuided).setOnClickListener { 
+            startActivity(Intent(this, GuidedDrawingActivity::class.java))
+        }
     }
     
     private fun loadImage(uri: Uri) {
