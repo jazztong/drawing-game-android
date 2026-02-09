@@ -71,16 +71,16 @@ class GuidedDrawingView @JvmOverloads constructor(
         // Draw white background
         canvas.drawColor(Color.WHITE)
         
-        // Draw guide (dashed overlay) - pass width and height
-        guideDrawer?.invoke(canvas, guidePaint, width, height)
-        
-        // Draw user's drawing
+        // Draw user's drawing FIRST
         userBitmap?.let {
             canvas.drawBitmap(it, 0f, 0f, null)
         }
         
         // Draw current stroke
         canvas.drawPath(currentPath, userPaint)
+        
+        // Draw guide LAST (on top) - pass width and height
+        guideDrawer?.invoke(canvas, guidePaint, width, height)
     }
     
     override fun onTouchEvent(event: MotionEvent): Boolean {
