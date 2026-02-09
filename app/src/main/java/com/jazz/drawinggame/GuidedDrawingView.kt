@@ -17,22 +17,25 @@ class GuidedDrawingView @JvmOverloads constructor(
     private var userBitmap: Bitmap? = null
     
     private val guidePaint = Paint().apply {
-        color = Color.parseColor("#80000000")  // Semi-transparent black
-        style = Paint.Style.STROKE
-        strokeWidth = 4f
-        pathEffect = DashPathEffect(floatArrayOf(10f, 10f), 0f)  // Dashed line
-    }
-    
-    private val userPaint = Paint().apply {
-        color = Color.BLACK
+        color = Color.parseColor("#806B21A8")  // Semi-transparent purple
         style = Paint.Style.STROKE
         strokeWidth = 8f
+        pathEffect = DashPathEffect(floatArrayOf(20f, 15f), 0f)  // Dashed line
         strokeCap = Paint.Cap.ROUND
         strokeJoin = Paint.Join.ROUND
         isAntiAlias = true
     }
     
-    private var guidePath: Path? = null
+    private val userPaint = Paint().apply {
+        color = Color.BLACK
+        style = Paint.Style.STROKE
+        strokeWidth = 12f
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+        isAntiAlias = true
+    }
+    
+    private var guideDrawer: ((Canvas, Paint) -> Unit)? = null
     private var currentPath = Path()
     private var currentX = 0f
     private var currentY = 0f
@@ -49,7 +52,7 @@ class GuidedDrawingView @JvmOverloads constructor(
             userPaint.color = value
         }
     
-    var brushSize = 8f
+    var brushSize = 12f
         set(value) {
             field = value
             userPaint.strokeWidth = value
@@ -68,10 +71,8 @@ class GuidedDrawingView @JvmOverloads constructor(
         // Draw white background
         canvas.drawColor(Color.WHITE)
         
-        // Draw guide path (dashed overlay)
-        guidePath?.let {
-            canvas.drawPath(it, guidePaint)
-        }
+        // Draw guide (dashed overlay)
+        guideDrawer?.invoke(canvas, guidePaint)
         
         // Draw user's drawing
         userBitmap?.let {
@@ -125,13 +126,13 @@ class GuidedDrawingView @JvmOverloads constructor(
         pauseJob?.cancel()
     }
     
-    fun setGuidePath(svgPathData: String) {
-        guidePath = parseSvgPath(svgPathData)
+    fun setGuideDrawer(drawer: (Canvas, Paint) -> Unit) {
+        guideDrawer = drawer
         invalidate()
     }
     
     fun hideGuide() {
-        guidePath = null
+        guideDrawer = null
         invalidate()
     }
     
@@ -152,86 +153,4 @@ class GuidedDrawingView @JvmOverloads constructor(
         }
         return bitmap
     }
-    
-    private fun parseSvgPath(pathData: String): Path {
-        val path = Path()
-        val commands = pathData.trim().split("\\s+".toRegex())
-        var i = 0
-        var currentX = 0f
-        var currentY = 0f
-        var lastCommand = ""
-        
-        while (i < commands.size) {
-            val cmd = commands[i]
-            
-            when {
-                cmd == "M" -> {
-                    i++
-                    val parts = commands[i].split(",")
-                    currentX = parts[0].toFloat()
-                    currentY = parts[1].toFloat()
-                    path.moveTo(currentX, currentY)
-                    lastCommand = "M"
-                }
-                cmd == "L" -> {
-                    i++
-                    val parts = commands[i].split(",")
-                    currentX = parts[0].toFloat()
-                    currentY = parts[1].toFloat()
-                    path.lineTo(currentX, currentY)
-                    lastCommand = "L"
-                }
-                cmd == "Q" -> {
-                    i++
-                    val cp = commands[i].split(",")
-                    i++
-                    val end = commands[i].split(",")
-                    currentX = end[0].toFloat()
-                    currentY = end[1].toFloat()
-                    path.quadTo(cp[0].toFloat(), cp[1].toFloat(), currentX, currentY)
-                    lastCommand = "Q"
-                }
-                cmd == "Z" -> {
-                    path.close()
-                    lastCommand = "Z"
-                }
-                cmd == "m" -> {
-                    i++
-                    val parts = commands[i].split(",")
-                    currentX += parts[0].toFloat()
-                    currentY += parts[1].toFloat()
-                    path.moveTo(currentX, currentY)
-                    lastCommand = "m"
-                }
-                cmd == "a" -> {
-                    // Simplified arc handling - just approximate with lines
-                    i += 3  // Skip rx, ry, flags
-                    val end = commands[i].split(",")
-                    currentX = end[0].toFloat()
-                    currentY = end[1].toFloat()
-                    path.lineTo(currentX, currentY)
-                    lastCommand = "a"
-                }
-                else -> {
-                    // Try to parse as coordinate continuation
-                    try {
-                        val parts = cmd.split(",")
-                        if (parts.size == 2) {
-                            currentX = parts[0].toFloat()
-                            currentY = parts[1].toFloat()
-                            when (lastCommand) {
-                                "L", "M" -> path.lineTo(currentX, currentY)
-                            }
-                        }
-                    } catch (e: Exception) {
-                        // Skip invalid commands
-                    }
-                }
-            }
-            i++
-        }
-        
-        return path
-    }
-    
 }
