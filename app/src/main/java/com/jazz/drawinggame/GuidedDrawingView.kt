@@ -200,4 +200,21 @@ class GuidedDrawingView @JvmOverloads constructor(
         }
         return bitmap
     }
+    
+    fun saveBitmapState(): Bitmap? {
+        Log.d(TAG, "saveBitmapState: Saving current bitmap")
+        return userBitmap?.copy(Bitmap.Config.ARGB_8888, false)
+    }
+    
+    fun restoreBitmapState(savedBitmap: Bitmap?) {
+        if (savedBitmap != null) {
+            Log.d(TAG, "restoreBitmapState: Restoring saved bitmap ${savedBitmap.width}x${savedBitmap.height}")
+            userBitmap?.let {
+                userCanvas.drawBitmap(savedBitmap, 0f, 0f, null)
+            }
+            invalidate()
+        } else {
+            Log.d(TAG, "restoreBitmapState: No bitmap to restore")
+        }
+    }
 }

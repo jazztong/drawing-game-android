@@ -261,6 +261,7 @@ class GuidedDrawingActivity : AppCompatActivity() {
     private val apiKey = "AIzaSyAkIxaFz8O3QIyCclrsD4uO-uFzVmfJcN0"
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var autoAdvanceJob: Job? = null
+    private var savedDrawingBitmap: Bitmap? = null
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -301,11 +302,14 @@ class GuidedDrawingActivity : AppCompatActivity() {
         Log.d(TAG, "startGuidedDrawing: Starting ${template.name}")
         currentTemplate = template
         currentStepIndex = 0
+        
+        // Clear canvas when starting NEW drawing
         drawingView.clearCanvas()
         cancelAutoAdvance()
         
-        Log.d(TAG, "startGuidedDrawing: Switching to drawing area")
+        Log.d(TAG, "startGuidedDrawing: Hiding template selection")
         findViewById<LinearLayout>(R.id.templateSelection).visibility = View.GONE
+        // Drawing area already visible - just bring it to front
         findViewById<LinearLayout>(R.id.drawingArea).visibility = View.VISIBLE
         
         showCurrentStep()
@@ -384,16 +388,16 @@ class GuidedDrawingActivity : AppCompatActivity() {
         
         nextButton.text = "Draw Another"
         nextButton.setOnClickListener {
-            Log.d(TAG, "Draw Another clicked - NOT clearing canvas")
+            Log.d(TAG, "Draw Another clicked - showing selection overlay")
             // Reset state
             currentTemplate = null
             currentStepIndex = 0
-            // DON'T clear canvas here - keep completed drawing visible!
             
-            // Show selection screen
-            Log.d(TAG, "Switching to template selection")
-            findViewById<LinearLayout>(R.id.drawingArea).visibility = View.GONE
+            // ✅ Keep drawingArea VISIBLE so drawing shows through!
+            // Just overlay the selection screen on top
+            Log.d(TAG, "Overlaying template selection (drawing stays visible)")
             findViewById<LinearLayout>(R.id.templateSelection).visibility = View.VISIBLE
+            findViewById<LinearLayout>(R.id.templateSelection).bringToFront()
             
             // Reset button
             nextButton.text = "Next Step"
