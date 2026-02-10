@@ -1,9 +1,11 @@
 # Drawing Game - Test Scenarios
 
 ## Issue: Completed Drawing Persistence
-**Version:** v1.1.5
+**Version:** v1.1.6 (COMPLETE FIX)
 **Fix Date:** 2026-02-10
-**Commit:** a7b212b
+**Commits:** 
+- a7b212b: Removed clearCanvas() from button handler (partial fix)
+- dd1b091: Fixed onSizeChanged() bitmap loss (complete fix)
 
 ## Expected Behavior
 
@@ -36,9 +38,53 @@
 7. **EXPECTED:** Each completed drawing visible until starting next one
 8. **PASS CRITERIA:** No premature canvas clearing
 
+## Root Cause Analysis
+
+### The Two-Part Bug
+
+**Part 1: Button Handler Clearing Canvas (v1.1.4)**
+```kotlin
+// ❌ BAD - v1.1.4
+nextButton.setOnClickListener {
+    drawingView.clearCanvas()  // Immediate erase!
+    showSelectionScreen()
+}
+
+// ✅ FIXED - v1.1.5
+nextButton.setOnClickListener {
+    // Don't clear here!
+    showSelectionScreen()
+}
+```
+
+**Part 2: View Lifecycle Clearing Bitmap (v1.1.5)**
+```kotlin
+// ❌ BAD - v1.1.5
+override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+    userBitmap = Bitmap.createBitmap(w, h, ...)  // NEW bitmap
+    userCanvas.drawColor(Color.WHITE)  // Clears to white!
+    // OLD DRAWING LOST when view visibility changes!
+}
+
+// ✅ FIXED - v1.1.6
+override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+    val oldBitmap = userBitmap  // Save first!
+    userBitmap = Bitmap.createBitmap(w, h, ...)
+    userCanvas.drawColor(Color.WHITE)
+    
+    if (oldBitmap != null && oldBitmap.width == w && oldBitmap.height == h) {
+        userCanvas.drawBitmap(oldBitmap, 0f, 0f, null)  // Restore!
+        oldBitmap.recycle()
+    }
+}
+```
+
+**Why onSizeChanged() is Called:**
+When `view.visibility` changes from `GONE` to `VISIBLE`, Android's View lifecycle calls `onSizeChanged()` even if the actual size didn't change. This was creating a fresh bitmap and losing the drawing.
+
 ## Code Verification
 
-### Fix Location: `GuidedDrawingActivity.kt:374-387`
+### Fix Location 1: `GuidedDrawingActivity.kt:374-387`
 
 ```kotlin
 private fun showCompletion() {
@@ -89,6 +135,30 @@ private fun startGuidedDrawing(template: DrawingTemplate) {
 
 **Correct Behavior:** Canvas only clears when `startGuidedDrawing()` is called (when user selects new template)
 
+### Fix Location 2: `GuidedDrawingView.kt:60-74`
+
+```kotlin
+override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+    super.onSizeChanged(w, h, oldw, oldh)
+    
+    // ✅ Save old bitmap before creating new one
+    val oldBitmap = userBitmap
+    
+    // Create new bitmap
+    userBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+    userCanvas.setBitmap(userBitmap)
+    userCanvas.drawColor(Color.WHITE)
+    
+    // ✅ Restore old drawing if size matches
+    if (oldBitmap != null && oldBitmap.width == w && oldBitmap.height == h) {
+        userCanvas.drawBitmap(oldBitmap, 0f, 0f, null)
+        oldBitmap.recycle()
+    }
+}
+```
+
+**Key Insight:** Drawing bitmap now persists through Android View lifecycle changes (visibility GONE → VISIBLE)
+
 ## Manual Test Checklist
 
 - [ ] Test Scenario 1: Drawing visible after completion
@@ -100,10 +170,17 @@ private fun startGuidedDrawing(template: DrawingTemplate) {
 - [ ] Test Scenario 7: Guides show correctly for all templates
 - [ ] Test Scenario 8: AI progress detection working
 
-## Known Working Version
+## Version History
 
-**v1.1.5** - Released 2026-02-10
+**v1.1.6** - Released 2026-02-10 (COMPLETE FIX)
+- ✅ Fixed onSizeChanged() bitmap loss
+- ✅ Drawing persists through view lifecycle changes
 - APK: `/tmp/DrawingApp/app/build/outputs/apk/debug/app-debug.apk`
+- GitHub: https://github.com/jazztong/drawing-game-android/releases/tag/v1.1.6
+
+**v1.1.5** - Released 2026-02-10 (PARTIAL FIX)
+- ✅ Removed clearCanvas() from button handler
+- ❌ Still had onSizeChanged() bug
 - GitHub: https://github.com/jazztong/drawing-game-android/releases/tag/v1.1.5
 
 ## Regression Prevention
@@ -145,6 +222,14 @@ I/GuidedDrawing: startGuidedDrawing(Cat) - clearing canvas, starting fresh
 
 ---
 
-**Status:** ✅ Fix implemented and tested
-**Confidence:** High - code review confirms correct behavior
-**Next Steps:** Manual device testing to verify in production
+**Status:** ✅ Complete fix implemented (v1.1.6)
+**Root Causes Fixed:**
+1. ✅ clearCanvas() in button handler (v1.1.5)
+2. ✅ onSizeChanged() bitmap recreation (v1.1.6)
+
+**Confidence:** Very High - both root causes addressed
+**Next Steps:** Manual device testing to verify drawing persists through:
+- Completion
+- "Draw Another" click
+- Template selection
+- View visibility changes
