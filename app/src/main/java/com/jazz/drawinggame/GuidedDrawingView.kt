@@ -3,6 +3,7 @@ package com.jazz.drawinggame
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import kotlinx.coroutines.*
@@ -13,6 +14,7 @@ class GuidedDrawingView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
     
+    private val TAG = "GuidedDrawingView"
     private val userCanvas = Canvas()
     private var userBitmap: Bitmap? = null
     
@@ -60,19 +62,29 @@ class GuidedDrawingView @JvmOverloads constructor(
     
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
+        Log.d(TAG, "onSizeChanged: w=$w h=$h oldw=$oldw oldh=$oldh")
         
         // Save old bitmap if it exists
         val oldBitmap = userBitmap
+        val hadBitmap = oldBitmap != null
+        Log.d(TAG, "onSizeChanged: hadBitmap=$hadBitmap oldSize=${oldBitmap?.width}x${oldBitmap?.height}")
         
         // Create new bitmap
         userBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         userCanvas.setBitmap(userBitmap)
         userCanvas.drawColor(Color.WHITE)
+        Log.d(TAG, "onSizeChanged: Created new bitmap ${w}x${h}")
         
         // Restore old drawing if size matches
         if (oldBitmap != null && oldBitmap.width == w && oldBitmap.height == h) {
+            Log.d(TAG, "onSizeChanged: Restoring old bitmap (sizes match)")
             userCanvas.drawBitmap(oldBitmap, 0f, 0f, null)
             oldBitmap.recycle()
+        } else if (oldBitmap != null) {
+            Log.w(TAG, "onSizeChanged: NOT restoring - size mismatch! old=${oldBitmap.width}x${oldBitmap.height} new=${w}x${h}")
+            oldBitmap.recycle()
+        } else {
+            Log.d(TAG, "onSizeChanged: No old bitmap to restore")
         }
     }
     
@@ -122,6 +134,27 @@ class GuidedDrawingView @JvmOverloads constructor(
         return true
     }
     
+    override fun onVisibilityChanged(changedView: View, visibility: Int) {
+        super.onVisibilityChanged(changedView, visibility)
+        val visStr = when(visibility) {
+            View.VISIBLE -> "VISIBLE"
+            View.INVISIBLE -> "INVISIBLE"
+            View.GONE -> "GONE"
+            else -> "UNKNOWN"
+        }
+        Log.d(TAG, "onVisibilityChanged: visibility=$visStr hasBitmap=${userBitmap != null}")
+    }
+    
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        Log.d(TAG, "onAttachedToWindow: hasBitmap=${userBitmap != null}")
+    }
+    
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        Log.d(TAG, "onDetachedFromWindow: hasBitmap=${userBitmap != null}")
+    }
+    
     private fun startPauseTimer() {
         lastDrawTime = System.currentTimeMillis()
         pauseJob?.cancel()
@@ -139,15 +172,18 @@ class GuidedDrawingView @JvmOverloads constructor(
     
     fun setGuideDrawer(drawer: (Canvas, Paint, Int, Int) -> Unit) {
         guideDrawer = drawer
+        Log.d(TAG, "setGuideDrawer: Guide set")
         invalidate()
     }
     
     fun hideGuide() {
         guideDrawer = null
+        Log.d(TAG, "hideGuide: Guide hidden")
         invalidate()
     }
     
     fun clearCanvas() {
+        Log.d(TAG, "clearCanvas: Clearing canvas")
         userBitmap?.let {
             userCanvas.drawColor(Color.WHITE)
         }

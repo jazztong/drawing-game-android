@@ -3,6 +3,7 @@ package com.jazz.drawinggame
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Base64
+import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -25,6 +26,7 @@ data class DrawingTemplate(
 )
 
 class GuidedDrawingActivity : AppCompatActivity() {
+    private val TAG = "GuidedDrawingActivity"
     private lateinit var drawingView: GuidedDrawingView
     private lateinit var instructionText: TextView
     private lateinit var nextButton: Button
@@ -296,11 +298,13 @@ class GuidedDrawingActivity : AppCompatActivity() {
     }
     
     private fun startGuidedDrawing(template: DrawingTemplate) {
+        Log.d(TAG, "startGuidedDrawing: Starting ${template.name}")
         currentTemplate = template
         currentStepIndex = 0
         drawingView.clearCanvas()
         cancelAutoAdvance()
         
+        Log.d(TAG, "startGuidedDrawing: Switching to drawing area")
         findViewById<LinearLayout>(R.id.templateSelection).visibility = View.GONE
         findViewById<LinearLayout>(R.id.drawingArea).visibility = View.VISIBLE
         
@@ -370,6 +374,7 @@ class GuidedDrawingActivity : AppCompatActivity() {
     }
     
     private fun showCompletion() {
+        Log.d(TAG, "showCompletion: Drawing completed!")
         instructionText.text = "🎉 Amazing! You finished the ${currentTemplate?.name}!"
         encouragementText.text = "You're a great artist! ⭐✨"
         encouragementText.visibility = View.VISIBLE
@@ -379,12 +384,14 @@ class GuidedDrawingActivity : AppCompatActivity() {
         
         nextButton.text = "Draw Another"
         nextButton.setOnClickListener {
+            Log.d(TAG, "Draw Another clicked - NOT clearing canvas")
             // Reset state
             currentTemplate = null
             currentStepIndex = 0
             // DON'T clear canvas here - keep completed drawing visible!
             
             // Show selection screen
+            Log.d(TAG, "Switching to template selection")
             findViewById<LinearLayout>(R.id.drawingArea).visibility = View.GONE
             findViewById<LinearLayout>(R.id.templateSelection).visibility = View.VISIBLE
             
