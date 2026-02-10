@@ -382,7 +382,7 @@ class GuidedDrawingActivity : AppCompatActivity() {
             // Reset state
             currentTemplate = null
             currentStepIndex = 0
-            drawingView.clearCanvas()
+            // DON'T clear canvas here - keep completed drawing visible!
             
             // Show selection screen
             findViewById<LinearLayout>(R.id.drawingArea).visibility = View.GONE
