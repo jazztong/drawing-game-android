@@ -60,9 +60,20 @@ class GuidedDrawingView @JvmOverloads constructor(
     
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
+        
+        // Save old bitmap if it exists
+        val oldBitmap = userBitmap
+        
+        // Create new bitmap
         userBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         userCanvas.setBitmap(userBitmap)
         userCanvas.drawColor(Color.WHITE)
+        
+        // Restore old drawing if size matches
+        if (oldBitmap != null && oldBitmap.width == w && oldBitmap.height == h) {
+            userCanvas.drawBitmap(oldBitmap, 0f, 0f, null)
+            oldBitmap.recycle()
+        }
     }
     
     override fun onDraw(canvas: Canvas) {
